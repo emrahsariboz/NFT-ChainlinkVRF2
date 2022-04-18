@@ -6,39 +6,32 @@ from brownie import (
     interface,
 )
 
-from scripts.helpful_scripts import get_account
+from scripts.helpful_scripts import get_account, get_contract_address
 import time
 from web3 import Web3
 import os
 
 
-def main():
-    link_token_address = "0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
-    vrf_coordinator = "0x6168499c0cFfCaCD319c818142124B7A15E857ab"
-    keyHash = "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc"
+def subscribe_for_VRF():
     account = get_account()
-
-    contract = AdvancedCollectible.deploy(
-        vrf_coordinator,
-        keyHash,
-        {"from": account},
-    )
-
     contract = AdvancedCollectible[-1]
-
-    print(f"The contract deployed at {contract.address}")
-
     # Subscribe to the contract
     tx = contract.subscribe({"from": account})
     tx.wait(1)
 
+
+def fund_with_link():
+    account = get_account()
+    contract = AdvancedCollectible[-1]
+
     # Fund the contract.
     # We need abi of LinkTokenInterface.sol
-
-    link_token_contract = interface.LinkTokenInterface(link_token_address)
+    link_token_contract = interface.LinkTokenInterface(
+        get_contract_address("link_token")
+    )
 
     tx = link_token_contract.transferAndCall(
-        vrf_coordinator,
+        get_contract_address("vrf_coordinator"),
         2000000000000000000,
         convert.to_bytes(contract.s_subscriptionId()),
         {"from": account},
@@ -46,26 +39,72 @@ def main():
 
     tx.wait(1)
 
-    # CHECK IF ENOUGH FUND!!
-    vrf_coordinator_contract = interface.VRFCoordinatorV2Interface(vrf_coordinator)
+
+def check_if_enough_link():
+    account = get_account()
+    contract = AdvancedCollectible[-1]
+
+    vrf_coordinator_contract = interface.VRFCoordinatorV2Interface(
+        get_contract_address("vrf_coordinator")
+    )
 
     (balance, _, _, _) = vrf_coordinator_contract.getSubscription(
         contract.s_subscriptionId()
     )
-
     print("Contract balance is ", balance)
-    print("x" * 50)
-    print("Sub ID", contract.s_subscriptionId())
+
+
+def add_user():
+    account = get_account()
+    contract = AdvancedCollectible[-1]
+
+    print("Adding user...")
 
     tx = contract.addUser(contract.address, {"from": account})
 
     tx.wait(1)
+
+
+def request_random():
+    account = get_account()
+    contract = AdvancedCollectible[-1]
 
     # Request Random
     tx = contract.requestRandom({"from": account})
 
     print("Waiting for the callback...")
 
-    time.sleep(70)
+    tx.wait(1)
+
+
+def main():
+
+    account = get_account()
+
+    contract = AdvancedCollectible.deploy(
+        get_contract_address("vrf_coordinator"),
+        get_contract_address("keyHash"),
+        {"from": account},
+    )
+
+    contract = AdvancedCollectible[-1]
+
+    print(f"The contract deployed at {contract.address}")
+
+    subscribe_for_VRF()
+
+    # FUND CONTRACT
+    fund_with_link()
+
+    # CHECK IF ENOUGH FUND!!
+
+    print("x" * 50)
+    print("Sub ID", contract.s_subscriptionId())
+
+    # Add User
+    add_user()
+
+    # Request Random
+    request_random()
 
     print(f"The random number is {contract.randomNum()}")
