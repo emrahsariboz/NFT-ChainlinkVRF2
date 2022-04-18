@@ -1,3 +1,4 @@
+from random import random
 from brownie import (
     AdvancedCollectible,
     accounts,
@@ -58,7 +59,7 @@ def add_user():
     account = get_account()
     contract = AdvancedCollectible[-1]
 
-    print("Adding user...")
+    print("Adding customer...")
 
     tx = contract.addUser(contract.address, {"from": account})
 
@@ -74,7 +75,17 @@ def request_random():
 
     print("Waiting for the callback...")
 
-    tx.wait(1)
+    tx.wait(5)
+
+    while True:
+        random_num = contract.randomNum()
+
+        if random_num != 0:
+            print("Finally received random num:", random_num)
+            break
+        else:
+            print("Waiting another 5 sn")
+            time.sleep(5)
 
 
 def main():
@@ -89,7 +100,7 @@ def main():
 
     contract = AdvancedCollectible[-1]
 
-    print(f"The contract deployed at {contract.address}")
+    print(f"The contract deployed at {contract.address}...")
 
     subscribe_for_VRF()
 
@@ -98,8 +109,7 @@ def main():
 
     # CHECK IF ENOUGH FUND!!
 
-    print("x" * 50)
-    print("Sub ID", contract.s_subscriptionId())
+    print("Sub ID...", contract.s_subscriptionId())
 
     # Add User
     add_user()
@@ -107,4 +117,4 @@ def main():
     # Request Random
     request_random()
 
-    print(f"The random number is {contract.randomNum()}")
+    print(f"The random number is {contract.randomNum()}...")

@@ -21,11 +21,11 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
     uint32 callbackGasLimit = 100000;
     uint32 numWords = 2;
 
-    //address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
-    //bytes32 keyHash =0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
     bytes32 keyHash;
     address vrfCoordinator;
     uint256 public tokenCounter;
+
+    event ReceivedCallback(uint256);
 
     constructor(address _vrfCoordinator, bytes32 _keyHash)
         VRFConsumerBaseV2(_vrfCoordinator)
