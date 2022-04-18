@@ -41,7 +41,7 @@ def fund_with_link():
     tx.wait(1)
 
 
-def check_if_enough_link():
+def amount_of_link_available():
     account = get_account()
     contract = AdvancedCollectible[-1]
 
