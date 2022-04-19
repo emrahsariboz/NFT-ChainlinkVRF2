@@ -7,22 +7,26 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
-contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract AdvancedCollectible is VRFConsumerBaseV2, ERC721, Ownable {
     enum Breed {
         PUG,
         SHIBA_INU,
         ST_BERNARD
     }
 
-    // An interface used to create subscription, etc.
+    // An interface used to interact with deployed coordinator contract.
     VRFCoordinatorV2Interface COORDINATOR;
 
-    uint256[] public s_randomWords;
+    // Random Number
     uint256 public randomNum;
-    address public owner;
 
-    // VRF configrations.
+    // subscription ID.
     uint64 public s_subscriptionId;
+
+    address private _owner;
+
     uint256 public s_requestId;
     uint16 requestConfirmations = 3;
     uint32 callbackGasLimit = 100000;
@@ -39,10 +43,10 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
         keyHash = _keyHash;
         tokenCounter = 0;
-        owner = msg.sender;
+        _owner = msg.sender;
     }
 
-    function requestRandom() external returns (uint256) {
+    function requestRandom() external onlyOwner returns (uint256) {
         s_requestId = COORDINATOR.requestRandomWords(
             keyHash,
             s_subscriptionId,
@@ -58,9 +62,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
         uint256, /* requestId */
         uint256[] memory randomWords
     ) internal override {
-        s_randomWords = randomWords;
-        randomNum = s_randomWords[0];
-
+        randomNum = randomWords[0];
         Breed breed = Breed(randomNum % 3);
     }
 

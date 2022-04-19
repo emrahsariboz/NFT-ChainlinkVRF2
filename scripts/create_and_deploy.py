@@ -28,7 +28,7 @@ def fund_with_link():
 
     tx = link_token_contract.transferAndCall(
         config["networks"][network.show_active()]["vrf_coordinator"],
-        2000000000000000000,
+        config["networks"][network.show_active()]["fee"],
         convert.to_bytes(contract.s_subscriptionId()),
         {"from": account},
     )
