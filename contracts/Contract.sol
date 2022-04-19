@@ -8,6 +8,12 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
 contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
+    enum Breed {
+        PUG,
+        SHIBA_INU,
+        ST_BERNARD
+    }
+
     // An interface used to create subscription, etc.
     VRFCoordinatorV2Interface COORDINATOR;
 
@@ -15,6 +21,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
     uint256 public randomNum;
     address public owner;
 
+    // VRF configrations.
     uint64 public s_subscriptionId;
     uint256 public s_requestId;
     uint16 requestConfirmations = 3;
@@ -24,8 +31,6 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
     bytes32 keyHash;
     address vrfCoordinator;
     uint256 public tokenCounter;
-
-    event ReceivedCallback(uint256);
 
     constructor(address _vrfCoordinator, bytes32 _keyHash)
         VRFConsumerBaseV2(_vrfCoordinator)
@@ -37,7 +42,7 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
         owner = msg.sender;
     }
 
-    function requestRandom() external {
+    function requestRandom() external returns (uint256) {
         s_requestId = COORDINATOR.requestRandomWords(
             keyHash,
             s_subscriptionId,
@@ -45,6 +50,8 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
             callbackGasLimit,
             numWords
         );
+
+        return s_requestId;
     }
 
     function fulfillRandomWords(
@@ -53,6 +60,8 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
     ) internal override {
         s_randomWords = randomWords;
         randomNum = s_randomWords[0];
+
+        Breed breed = Breed(randomNum % 3);
     }
 
     function subscribe() external returns (uint64 subId) {
@@ -62,4 +71,11 @@ contract AdvancedCollectible is VRFConsumerBaseV2, ERC721 {
     function addUser(address _sc) external {
         COORDINATOR.addConsumer(s_subscriptionId, _sc);
     }
+
+    // function createCollectible(string memory tokenURI)
+    //     public
+    //     returns (bytes32)
+    // {
+    //     uint256 requestId = requestRandom();
+    // }
 }

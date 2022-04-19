@@ -1,13 +1,7 @@
 from random import random
-from brownie import (
-    AdvancedCollectible,
-    accounts,
-    config,
-    convert,
-    interface,
-)
+from brownie import AdvancedCollectible, accounts, config, convert, interface, network
 
-from scripts.helpful_scripts import get_account, get_contract_address
+from scripts.helpful_scripts import get_account
 import time
 from web3 import Web3
 import os
@@ -22,17 +16,18 @@ def subscribe_for_VRF():
 
 
 def fund_with_link():
+    print("Funding the subscription...")
     account = get_account()
     contract = AdvancedCollectible[-1]
 
     # Fund the contract.
     # We need abi of LinkTokenInterface.sol
     link_token_contract = interface.LinkTokenInterface(
-        get_contract_address("link_token")
+        config["networks"][network.show_active()]["link_token"]
     )
 
     tx = link_token_contract.transferAndCall(
-        get_contract_address("vrf_coordinator"),
+        config["networks"][network.show_active()]["vrf_coordinator"],
         2000000000000000000,
         convert.to_bytes(contract.s_subscriptionId()),
         {"from": account},
@@ -46,7 +41,7 @@ def amount_of_link_available():
     contract = AdvancedCollectible[-1]
 
     vrf_coordinator_contract = interface.VRFCoordinatorV2Interface(
-        get_contract_address("vrf_coordinator")
+        config["networks"][network.show_active()]["vrf_coordinator"],
     )
 
     (balance, _, _, _) = vrf_coordinator_contract.getSubscription(
@@ -93,8 +88,8 @@ def main():
     account = get_account()
 
     contract = AdvancedCollectible.deploy(
-        get_contract_address("vrf_coordinator"),
-        get_contract_address("keyHash"),
+        config["networks"][network.show_active()]["vrf_coordinator"],
+        "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc",
         {"from": account},
     )
 
