@@ -1,10 +1,8 @@
 from random import random
 from brownie import AdvancedCollectible, accounts, config, convert, interface, network
-
 from scripts.helpful_scripts import get_account
 import time
 from web3 import Web3
-import os
 
 
 def subscribe_for_VRF():
@@ -28,7 +26,7 @@ def fund_with_link():
 
     tx = link_token_contract.transferAndCall(
         config["networks"][network.show_active()]["vrf_coordinator"],
-        config["networks"][network.show_active()]["fee"],
+        Web3.toWei(2, "ether"),  # 2 LINK
         convert.to_bytes(contract.s_subscriptionId()),
         {"from": account},
     )
@@ -61,35 +59,13 @@ def add_user():
     tx.wait(1)
 
 
-def request_random():
-    account = get_account()
-    contract = AdvancedCollectible[-1]
-
-    # Request Random
-    tx = contract.requestRandom({"from": account})
-
-    print("Waiting for the callback...")
-
-    tx.wait(5)
-
-    while True:
-        random_num = contract.randomNum()
-
-        if random_num != 0:
-            print("Finally received random num:", random_num)
-            break
-        else:
-            print("Waiting another 5 sn")
-            time.sleep(5)
-
-
 def main():
 
     account = get_account()
 
     contract = AdvancedCollectible.deploy(
         config["networks"][network.show_active()]["vrf_coordinator"],
-        "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc",
+        config["networks"][network.show_active()]["keyHash"],
         {"from": account},
     )
 
@@ -108,8 +84,3 @@ def main():
 
     # Add User
     add_user()
-
-    # Request Random
-    request_random()
-
-    print(f"The random number is {contract.randomNum()}...")
