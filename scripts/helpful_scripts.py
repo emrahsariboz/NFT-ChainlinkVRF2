@@ -8,6 +8,11 @@ from brownie import (
 
 FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork", "mainnet-fork-dev"]
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache-gui-2"]
+BREED_MAPPING = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD"}
+
+
+def get_breed(breed):
+    return BREED_MAPPING[breed]
 
 
 def get_account(index=None, id=None):

@@ -14,7 +14,7 @@ def main():
     account = get_account()
     contract = AdvancedCollectible[-1]
 
-    tx = contract.createCollectible(sample_token_uri, {"from": account})
+    tx = contract.createCollectible("asdasdasd", {"from": account})
 
     print("Collectible Created!!!")
 
