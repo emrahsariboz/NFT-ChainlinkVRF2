@@ -8,6 +8,7 @@ NFT mint functionality, where `_mint` operation uses Verifiable Random Function 
 - Fund your subscription. In the example, I funded with 2 LINK. 
 - Add a consumer of your subscription, which is the address of the contract you deployed.
 - Request randomness, wait for the fallback call. 
+- fallback call triggers `_mint` operation.
 
 
 ## How to run?
